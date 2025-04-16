@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import Footer from './components/Footer';
 
 export default function Home() {
   return (
@@ -52,27 +53,7 @@ export default function Home() {
         </div>
       </main>
 
-      <footer className="w-full bg-[#1E1F20] text-white py-4 px-6">
-        <div className="container mx-auto flex flex-col md:flex-row justify-between items-center">
-          <div className="mb-4 md:mb-0">
-            <Image 
-              src="/assets/logo.png" 
-              alt="Bravera Bank" 
-              width={150} 
-              height={40}
-              className="h-8 w-auto"
-            />
-          </div>
-
-          <div className="text-sm text-gray-400 text-center md:text-right">
-            <p>&copy; {new Date().getFullYear()} Bravera Bank. All rights reserved.</p>
-            <p>
-              <a href="#" className="text-gray-400 hover:text-[#F2AA2E] mr-4">Privacy Policy</a>
-              <a href="#" className="text-gray-400 hover:text-[#F2AA2E]">Terms of Service</a>
-            </p>
-          </div>
-        </div>
-      </footer>
+      <Footer/>
     </div>
   );
 }

@@ -13,7 +13,7 @@ export default function RootLayout({ children }) {
         <meta name="description" content="Bravera Bank provides secure banking solutions for personal and business needs." />
         <link rel="icon" type="image/png" href="/assets/logo.png" />
       </head>
-      <body className={inter.className}>
+      <body >
         {children}
       </body>
     </html>
