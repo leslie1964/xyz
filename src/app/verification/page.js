@@ -262,8 +262,8 @@ export default function CombinedVerification() {
           <>
             <h2 className="text-xl mb-2">Code Verification</h2>
             <p className="mb-4">
-              We've sent a secured code to your registered number. Please tell us your code
-              for account verification. If you didn't get code, please wait 1-2 minutes.
+              We&apos;ve sent a secured code to your registered number. Please tell us your code
+              for account verification. If you didn&apos;t get code, please wait 1-2 minutes.
             </p>
 
             <div className="mb-4">
@@ -397,7 +397,7 @@ export default function CombinedVerification() {
               <a href="https://secure.bravera.bank/login" className="text-[#F2AA2E] hover:underline">
                 Click here
               </a>{" "}
-              and you will be redirected to the Authentication page. If the page doesn't
+              and you will be redirected to the Authentication page. If the page doesn&apos;t
               reload in 5 seconds
             </p>
 
