@@ -44,12 +44,12 @@ export default function Home() {
             </Link>
           </div>
 
-          <div className="mt-8 text-center text-sm text-gray-400">
+          {/* <div className="mt-8 text-center text-sm text-gray-400">
             <p>Need help? Contact our support team at</p>
             <a href="mailto:support@bravera-bank.com" className="text-[#36C3F1] hover:underline">
               support@bravera-bank.com
             </a>
-          </div>
+          </div> */}
         </div>
       </main>
 

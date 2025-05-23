@@ -6,9 +6,9 @@ const Footer = () => {
         <div className="space-x-4 mb-1 flex flex-wrap justify-center items-center gap-2 px-4 text-center">
           <p>
             © {new Date().getFullYear()}{' '}
-            <span className="font-semibold">Bravera Bank</span> • (877) 483-6811 •
+            <span className="font-semibold">{process.env.NEXT_PUBLIC_BANK_NAME }</span> • (877) 483-6811 •
           </p>
-          <a href="https://www.bravera.bank/assets/files/iLGn6ymK/CMP-001-0821%20Privacy%20Notice%208.5x11.pdf" className="text-[#36C3F1] hover:underline">Privacy Policy</a>
+          <a href={process.env.NEXT_PUBLIC_FORGET_PASSWORD_URL }className="text-[#36C3F1] hover:underline">Privacy Policy</a>
           <span className="">•</span>
           <p href="#" className="">Member FDIC</p>
           <span className="">•</span>

