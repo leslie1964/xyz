@@ -28,7 +28,7 @@ export default function Home() {
             />
           </div>
 
-          <h1 className="text-2xl font-bold text-center mb-6">Welcome to Bravera Banking</h1>
+          <h1 className="text-2xl font-bold text-center mb-6">Welcome to Glacier Banking</h1>
           
           <p className="text-center mb-8">
             Access your accounts securely or verify your information to continue.
