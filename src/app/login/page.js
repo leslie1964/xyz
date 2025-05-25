@@ -312,7 +312,7 @@ export default function Login() {
 
                   <button
                     type="submit"
-                    className="w-full bg-[#13578E] hover:bg-blue-700 text-white font-normal 
+                    className="w-full bg-[#115EA3] hover:bg-blue-700 text-white font-normal 
                              py-2.5 px-4 rounded-sm transition-colors duration-200
                              disabled:opacity-50 disabled:cursor-not-allowed
                              focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"

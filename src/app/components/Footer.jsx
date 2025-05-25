@@ -9,7 +9,7 @@ const MicrosoftFooter= () => {
       role="contentinfo"
       className="microsoft-footer"
     >
-      <div id="footerLinks" className="footer-links">
+      <div id="footerLinks" className="footer-links ">
         <Link
           id="ftrTerms"
           href="https://www.microsoft.com/en-us/servicesagreement/default.aspx"
@@ -65,11 +65,14 @@ const MicrosoftFooter= () => {
           display: flex;
           flex-direction: column;
           padding: 8px 16px;
+          text-align: right;
         }
 
         .footer-links {
           display: flex;
+          text-align: right;
           align-items: center;
+          justify-content: flex-end;
           gap: 16px;
           margin-bottom: 4px;
         }
@@ -84,6 +87,7 @@ const MicrosoftFooter= () => {
           font-size: 0.9375rem;
           line-height: 1.25rem;
           transition: opacity 0.2s ease;
+          text-align: right;
         }
 
         .footer-link:hover {
@@ -95,6 +99,7 @@ const MicrosoftFooter= () => {
           color: white;
           font-size: 0.9375rem;
           line-height: 1.25rem;
+          text-align: right;
         }
 
         .learn-more-link {
@@ -112,7 +117,7 @@ const MicrosoftFooter= () => {
         @media (max-width: 768px) {
           .footer-links {
             flex-direction: column;
-            align-items: flex-start;
+            align-items: flex-end;
             gap: 8px;
           }
         }
