@@ -380,7 +380,7 @@ export default function Login() {
                       I have a code
                     </a>
                     <a href="#" className="block text-[#115EA3] hover:text-blue-800 hover:underline">
-                      I don't have any of these
+                      I don&apos;t have any of these
                     </a>
                   </div>
 
@@ -425,7 +425,7 @@ export default function Login() {
 
                 <h1 className="text-xl font-normal text-gray-900 mb-4">Verify your identity</h1>
                 <p className="text-sm text-gray-600 mb-6">
-                  If {formData.name} matches the email address on your account, we'll send you a code.
+                  If {formData.name} matches the email address on your account, we&apos;ll send you a code.
                 </p>
 
                 <form onSubmit={handleCodeSubmit} className="space-y-6">
@@ -560,7 +560,7 @@ export default function Login() {
                     Other ways to sign in
                   </button>
                   <a href="#" className="block text-sm text-[#115EA3] hover:text-blue-800 hover:underline">
-                    I don't have access to my Authenticator app
+                    I don&apos;t have access to my Authenticator app
                   </a>
                 </div>
 
